@@ -18,7 +18,11 @@ export default {
     fontFamily: {
       sans: ["Inter", "sans-serif"],
     },
-    extend: {},
+    extend: {
+      gridTemplateColumns: {
+        7: "repeat(7, minmax(120px, 1fr))",
+      },
+    },
   },
   plugins: [],
 };
