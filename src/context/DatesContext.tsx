@@ -1,4 +1,4 @@
-import { eachMonthOfInterval, getDaysInMonth, getYear } from "date-fns";
+import { getDaysInMonth, getYear } from "date-fns";
 import React, { createContext, useContext, useState } from "react";
 
 const DateContext: React.Context<any> = createContext(undefined);
