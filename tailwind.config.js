@@ -4,6 +4,7 @@ export default {
   theme: {
     colors: {
       black: "#262627",
+      "black-dark": "rgba(0, 0, 0, 0.5)",
       "black-border": "#3A3943",
       gray: "#DDE0FF1F",
       "gray-light": "#E4EDFB",

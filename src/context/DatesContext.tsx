@@ -4,20 +4,7 @@ import React, { createContext, useContext, useState } from "react";
 const DateContext: React.Context<any> = createContext(undefined);
 
 interface IDate {
-  months: {
-    jan: Date[];
-    fev: Date[];
-    mar: Date[];
-    apr: Date[];
-    may: Date[];
-    jun: Date[];
-    jul: Date[];
-    aug: Date[];
-    sep: Date[];
-    oct: Date[];
-    nov: Date[];
-    dec: Date[];
-  };
+  months: Date[][];
   currentDay: Date;
   weekdays: string[];
 }
@@ -26,21 +13,21 @@ export const DatesProvider = ({ children }: any) => {
   const currentYear = getYear(new Date());
   const dates: IDate = {
     currentDay: new Date(),
-    months: {
-      jan: returnDaysOfMonth(0, currentYear),
-      fev: returnDaysOfMonth(1, currentYear),
-      mar: returnDaysOfMonth(2, currentYear),
-      apr: returnDaysOfMonth(3, currentYear),
-      may: returnDaysOfMonth(4, currentYear),
-      jun: returnDaysOfMonth(5, currentYear),
-      jul: returnDaysOfMonth(6, currentYear),
-      aug: returnDaysOfMonth(7, currentYear),
-      sep: returnDaysOfMonth(8, currentYear),
-      oct: returnDaysOfMonth(9, currentYear),
-      nov: returnDaysOfMonth(10, currentYear),
-      dec: returnDaysOfMonth(11, currentYear),
-    },
-    weekdays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    months: [
+      returnDaysOfMonth(0, currentYear),
+      returnDaysOfMonth(1, currentYear),
+      returnDaysOfMonth(2, currentYear),
+      returnDaysOfMonth(3, currentYear),
+      returnDaysOfMonth(4, currentYear),
+      returnDaysOfMonth(5, currentYear),
+      returnDaysOfMonth(6, currentYear),
+      returnDaysOfMonth(7, currentYear),
+      returnDaysOfMonth(8, currentYear),
+      returnDaysOfMonth(9, currentYear),
+      returnDaysOfMonth(10, currentYear),
+      returnDaysOfMonth(11, currentYear),
+    ],
+    weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
   };
 
   const [calendar, setCalendar] = useState<IDate>(dates);
