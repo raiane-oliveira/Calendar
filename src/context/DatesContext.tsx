@@ -31,9 +31,12 @@ export const DatesProvider = ({ children }: any) => {
   };
 
   const [calendar, setCalendar] = useState<IDate>(dates);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <DateContext.Provider value={{ calendar, setCalendar }}>
+    <DateContext.Provider
+      value={{ calendar, setCalendar, isModalOpen, setIsModalOpen }}
+    >
       {children}
     </DateContext.Provider>
   );

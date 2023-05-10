@@ -7,8 +7,11 @@ import {
   lastDayOfMonth,
 } from "date-fns";
 import { useCalendar } from "../context/DatesContext";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { createPortal } from "react-dom";
+import { Modal } from "./Modal";
+import { AddEvent } from "./AddEvent";
 
 interface IDayProps {
   index: number;
@@ -18,7 +21,7 @@ interface IDayProps {
 }
 
 export function Calendar() {
-  const { calendar } = useCalendar();
+  const { calendar, isModalOpen } = useCalendar();
 
   // The initial state setting is the current month
   const [monthIndex, setMonthIndex] = useState(getMonth(calendar.currentDay));
@@ -128,6 +131,14 @@ export function Calendar() {
             ))}
         </div>
       </main>
+
+      {isModalOpen &&
+        createPortal(
+          <Modal bgColor="black-border" padding={6}>
+            <AddEvent day="May 25" />
+          </Modal>,
+          document.body
+        )}
     </div>
   );
 }
@@ -138,26 +149,34 @@ const DayCalendar: React.FC<IDayProps> = ({
   firstDayOfWeekIndex,
   isAnotherMonth = false,
 }) => {
-  const { calendar } = useCalendar();
+  const { calendar, isModalOpen, setIsModalOpen } = useCalendar();
+
   const isFirstDay = index === 0;
   const isDayWeekend = isWeekend(day);
 
+  function handleOpenModal() {
+    setIsModalOpen(!isModalOpen);
+  }
+
   return (
-    <div
-      className={`grid p-2 w-full h-44 ${
-        isFirstDay && " col-start-" + firstDayOfWeekIndex
-      } ${isDayWeekend ? " bg-black-dark" : "bg-black"}
+    <>
+      <div
+        className={`grid p-2 w-full h-44 cursor-pointer ${
+          isFirstDay && " col-start-" + firstDayOfWeekIndex
+        } ${isDayWeekend ? " bg-black-dark" : "bg-black"}
         ${isAnotherMonth && " opacity-60"}
       `}
-    >
-      <span
-        className={`justify-self-end font-semibold ${
-          isSameDay(day, calendar.currentDay) &&
-          "bg-blue p-2 rounded-full h-max"
-        }`}
+        onClick={handleOpenModal}
       >
-        {format(day, "d")}
-      </span>
-    </div>
+        <span
+          className={`justify-self-end font-semibold ${
+            isSameDay(day, calendar.currentDay) &&
+            "bg-blue p-2 rounded-full h-max"
+          }`}
+        >
+          {format(day, "d")}
+        </span>
+      </div>
+    </>
   );
 };
