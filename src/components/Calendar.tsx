@@ -1,4 +1,4 @@
-import { format, getMonth, isWeekend } from "date-fns";
+import { format, getDay, getMonth, isSameDay, isWeekend } from "date-fns";
 import { useCalendar } from "../context/DatesContext";
 import { useState } from "react";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
@@ -9,6 +9,9 @@ export function Calendar() {
 
   const year = format(calendar.currentDay, "yyyy");
   const month = format(new Date(Number(year), monthIndex, 1), "MMMM");
+
+  const firstDayOfWeekIndex = getDay(new Date(Number(year), monthIndex, 1)) + 1;
+  console.log(firstDayOfWeekIndex);
 
   function onNextMonth() {
     setMonthIndex(monthIndex + 1);
@@ -32,11 +35,7 @@ export function Calendar() {
     <div className=" bg-black text-white rounded-lg py-6 px-10">
       <header className="flex justify-between items-center px-1 py-6 font-bold text-4xl">
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            disabled={monthIndex < 0}
-            onClick={onPreviousMonth}
-          >
+          <button type="button" onClick={onPreviousMonth}>
             <CaretLeft size={24} />
           </button>
           <h1>{month}</h1>
@@ -54,7 +53,7 @@ export function Calendar() {
             </span>
           ))}
         </header>
-        <div className="grid grid-cols-7 p-0.5 gap-0.5 bg-black-border overflow-hidden">
+        <div className="grid grid-flow-row grid-cols-7 p-0.5 gap-0.5 bg-black-border">
           {calendar.months[monthIndex].map((day: Date, index: number) => {
             const isFirstDay = index === 0;
             const isDayWeekend = isWeekend(day);
@@ -62,10 +61,15 @@ export function Calendar() {
               <div
                 key={index}
                 className={`grid p-2 w-full h-44 ${
-                  isDayWeekend ? " bg-black-dark" : "bg-black"
-                } ${isFirstDay && "col-start-2"}`}
+                  isFirstDay && " col-start-" + firstDayOfWeekIndex.toString()
+                } ${isDayWeekend ? " bg-black-dark" : "bg-black"}`}
               >
-                <span className="justify-self-end font-semibold">
+                <span
+                  className={`justify-self-end font-semibold ${
+                    isSameDay(day, calendar.currentDay) &&
+                    "bg-blue p-2 rounded-full h-max"
+                  }`}
+                >
                   {format(day, "d")}
                 </span>
               </div>
