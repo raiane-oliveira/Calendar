@@ -5,7 +5,6 @@ import {
   isSameDay,
   isWeekend,
   lastDayOfMonth,
-  lastDayOfWeek,
 } from "date-fns";
 import { useCalendar } from "../context/DatesContext";
 import React, { useState } from "react";
@@ -55,6 +54,8 @@ export function Calendar() {
   function renderPreviousDays() {
     const previousMonth = calendar.months[monthIndex - 1];
 
+    if (!previousMonth) return;
+
     // Copies the last days of the previous month based on the remaining weekdays
     const list = previousMonth.slice(
       previousMonth.length - firstDayOfWeekIndex
@@ -63,7 +64,12 @@ export function Calendar() {
   }
 
   function renderNextDays() {
-    const nextMonth = calendar.months[monthIndex + 1];
+    let nextMonth = calendar.months[monthIndex + 1];
+
+    // Returns first month
+    if (!nextMonth) {
+      nextMonth = calendar.months[0];
+    }
 
     // Copies the first days of the next month based on the remaining weekdays
     const restOfWeek = 6 - lastDayOfWeekIndex;
@@ -94,14 +100,15 @@ export function Calendar() {
           ))}
         </header>
         <div className="grid grid-flow-row grid-cols-7 p-0.5 gap-0.5 bg-black-border">
-          {listPreviousDays.map((day: Date, index: number) => (
-            <DayCalendar
-              day={day}
-              index={index}
-              isAnotherMonth={true}
-              key={index}
-            />
-          ))}
+          {listPreviousDays &&
+            listPreviousDays.map((day: Date, index: number) => (
+              <DayCalendar
+                day={day}
+                index={index}
+                isAnotherMonth={true}
+                key={index}
+              />
+            ))}
           {calendar.months[monthIndex].map((day: Date, index: number) => (
             <DayCalendar
               day={day}
@@ -110,14 +117,15 @@ export function Calendar() {
               key={index}
             />
           ))}
-          {listNextDays.map((day: Date, index: number) => (
-            <DayCalendar
-              day={day}
-              index={index}
-              isAnotherMonth={true}
-              key={index}
-            />
-          ))}
+          {listNextDays &&
+            listNextDays.map((day: Date, index: number) => (
+              <DayCalendar
+                day={day}
+                index={index}
+                isAnotherMonth={true}
+                key={index}
+              />
+            ))}
         </div>
       </main>
     </div>
