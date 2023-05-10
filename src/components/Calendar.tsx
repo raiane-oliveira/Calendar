@@ -7,7 +7,7 @@ import {
   lastDayOfMonth,
 } from "date-fns";
 import { useCalendar } from "../context/DatesContext";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { createPortal } from "react-dom";
 import { Modal } from "./Modal";
