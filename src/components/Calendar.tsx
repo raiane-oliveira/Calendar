@@ -134,7 +134,7 @@ export function Calendar() {
 
       {isModalOpen &&
         createPortal(
-          <Modal bgColor="black-border" padding={6}>
+          <Modal classes="bg-black-border p-6">
             <AddEvent day="May 25" />
           </Modal>,
           document.body
@@ -171,7 +171,7 @@ const DayCalendar: React.FC<IDayProps> = ({
         <span
           className={`justify-self-end font-semibold ${
             isSameDay(day, calendar.currentDay) &&
-            "bg-blue p-2 rounded-full h-max"
+            "bg-blue px-2 py-1 rounded-full h-max"
           }`}
         >
           {format(day, "d")}

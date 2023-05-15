@@ -55,7 +55,7 @@ export const AddEvent: React.FC<IAddEventProps> = ({ day }) => {
               <button
                 type="submit"
                 className="bg-blue disabled:opacity-70 text-center text-white font-bold py-2 rounded-lg"
-                disabled={!formik.isValid}
+                disabled={!formik.values.event.trim()}
               >
                 Add
               </button>
