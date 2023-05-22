@@ -11,7 +11,7 @@ interface IDate {
 
 export const DatesProvider = ({ children }: any) => {
   const currentYear = getYear(new Date());
-  const dates: IDate = {
+  const [calendar, setCalendar] = useState<IDate>({
     currentDay: new Date(),
     months: [
       returnDaysOfMonth(0, currentYear),
@@ -28,9 +28,7 @@ export const DatesProvider = ({ children }: any) => {
       returnDaysOfMonth(11, currentYear),
     ],
     weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-  };
-
-  const [calendar, setCalendar] = useState<IDate>(dates);
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (

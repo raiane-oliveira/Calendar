@@ -9,7 +9,7 @@ interface IModalProps {
   };
 }
 
-export const Modal: React.FC<IModalProps> = ({
+export const Modal: React.FunctionComponent<IModalProps> = ({
   children,
   classes,
   position,

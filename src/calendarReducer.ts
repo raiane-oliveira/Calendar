@@ -12,7 +12,7 @@ interface IAction {
   type: string;
 }
 
-export default function calendarReducer(dates: IDate, action: IAction) {
+export default function calendarReducer(calendar: IDate, action: IAction) {
   switch (action.type) {
     case "addEvent": {
       return [];

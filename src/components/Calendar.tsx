@@ -1,5 +1,6 @@
 import {
   format,
+  getDate,
   getDay,
   getMonth,
   isSameDay,
@@ -13,43 +14,59 @@ import { createPortal } from "react-dom";
 import { Modal } from "./Modal";
 import { AddEvent } from "./AddEvent";
 
+interface IDateState {
+  month: number;
+  day: number;
+}
+
 interface IDayProps {
   index: number;
   day: Date;
   firstDayOfWeekIndex?: number;
   isAnotherMonth?: boolean;
-  setMousePosition: React.Dispatch<
+  setMousePosition?: React.Dispatch<
     React.SetStateAction<{ x: number; y: number }>
   >;
+  dateIndex?: IDateState;
+  setDateIndex?: React.Dispatch<React.SetStateAction<IDateState>>;
 }
 
 export function Calendar() {
   const { calendar, isModalOpen, setIsModalOpen } = useCalendar();
 
-  // The initial state setting is the current month
-  const [monthIndex, setMonthIndex] = useState(getMonth(calendar.currentDay));
+  // The initial state setting is the current date
+  const [dateIndex, setDateIndex] = useState<IDateState>({
+    month: getMonth(calendar.currentDay),
+    day: getDate(calendar.currentDay),
+  });
   const [mousePosition, setMousePosition] = useState({
     x: 0,
     y: 0,
   });
 
   const year = Number(format(calendar.currentDay, "yyyy"));
-  const month = format(new Date(Number(year), monthIndex, 1), "MMMM");
+  const month = format(new Date(Number(year), dateIndex.month, 1), "MMMM");
 
-  const firstDayOfWeekIndex = getDay(new Date(year, monthIndex, 1));
+  const firstDayOfWeekIndex = getDay(new Date(year, dateIndex.month, 1));
   const lastDayOfWeekIndex = getDay(
-    lastDayOfMonth(new Date(year, monthIndex, 1))
+    lastDayOfMonth(new Date(year, dateIndex.month, 1))
   );
 
   const listPreviousDays = renderPreviousDays();
   const listNextDays = renderNextDays();
 
   function onNextMonth() {
-    setMonthIndex(monthIndex + 1);
+    setDateIndex({
+      ...dateIndex,
+      month: dateIndex.month + 1,
+    });
 
     // Turn back to first month
-    if (monthIndex === 11) {
-      setMonthIndex(0);
+    if (dateIndex.month === 11) {
+      setDateIndex({
+        ...dateIndex,
+        month: 0,
+      });
     }
 
     // Close modal if it's open
@@ -57,11 +74,17 @@ export function Calendar() {
   }
 
   function onPreviousMonth() {
-    setMonthIndex(monthIndex - 1);
+    setDateIndex({
+      ...dateIndex,
+      month: dateIndex.month - 1,
+    });
 
     // Turn back to last month
-    if (monthIndex === 0) {
-      setMonthIndex(11);
+    if (dateIndex.month === 0) {
+      setDateIndex({
+        ...dateIndex,
+        month: 11,
+      });
     }
 
     // Close modal if it's open
@@ -69,7 +92,7 @@ export function Calendar() {
   }
 
   function renderPreviousDays() {
-    const previousMonth = calendar.months[monthIndex - 1];
+    const previousMonth = calendar.months[dateIndex.month - 1];
 
     if (!previousMonth) return;
 
@@ -81,7 +104,7 @@ export function Calendar() {
   }
 
   function renderNextDays() {
-    let nextMonth = calendar.months[monthIndex + 1];
+    let nextMonth = calendar.months[dateIndex.month + 1];
 
     // Returns first month
     if (!nextMonth) {
@@ -120,15 +143,16 @@ export function Calendar() {
           {listPreviousDays &&
             listPreviousDays.map((day: Date, index: number) => (
               <DayCalendar
-                setMousePosition={setMousePosition}
                 day={day}
                 index={index}
                 isAnotherMonth={true}
                 key={index}
               />
             ))}
-          {calendar.months[monthIndex].map((day: Date, index: number) => (
+          {calendar.months[dateIndex.month].map((day: Date, index: number) => (
             <DayCalendar
+              dateIndex={dateIndex}
+              setDateIndex={setDateIndex}
               setMousePosition={setMousePosition}
               day={day}
               index={index}
@@ -139,7 +163,6 @@ export function Calendar() {
           {listNextDays &&
             listNextDays.map((day: Date, index: number) => (
               <DayCalendar
-                setMousePosition={setMousePosition}
                 day={day}
                 index={index}
                 isAnotherMonth={true}
@@ -158,7 +181,12 @@ export function Calendar() {
               x: `${mousePosition.x}px`,
             }}
           >
-            <AddEvent day="May 25" />
+            <AddEvent
+              day={format(
+                calendar.months[dateIndex.month][dateIndex.day],
+                "PP"
+              )}
+            />
           </Modal>,
           document.body
         )}
@@ -172,6 +200,8 @@ const DayCalendar: React.FC<IDayProps> = ({
   firstDayOfWeekIndex,
   isAnotherMonth = false,
   setMousePosition,
+  setDateIndex,
+  dateIndex,
 }) => {
   const { calendar, isModalOpen, setIsModalOpen } = useCalendar();
 
@@ -180,10 +210,18 @@ const DayCalendar: React.FC<IDayProps> = ({
 
   function handleOpenModal(e: MouseEvent) {
     const HALF_WIDTH_MODAL = 215;
-    setMousePosition({
-      x: e.clientX - HALF_WIDTH_MODAL,
-      y: e.clientY,
-    });
+    if (setMousePosition && dateIndex && setDateIndex) {
+      setMousePosition({
+        x: e.clientX - HALF_WIDTH_MODAL,
+        y: e.clientY + 50,
+      });
+
+      setDateIndex({
+        ...dateIndex,
+        day: getDate(day) - 1,
+      });
+    }
+
     setIsModalOpen(!isModalOpen);
   }
 
