@@ -1,5 +1,5 @@
 import React from "react";
-import { Field, Form, Formik } from "formik";
+import { Field, Form, Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import { CaretUp } from "@phosphor-icons/react";
 import { useCalendar } from "../context/DatesContext";
@@ -8,13 +8,21 @@ interface IAddEventProps {
   day: string;
 }
 
-export const AddEvent: React.FC<IAddEventProps> = ({ day }) => {
+interface FormValues {
+  event: string;
+}
+
+export const AddEvent: React.FunctionComponent<IAddEventProps> = ({ day }) => {
   const { setIsModalOpen } = useCalendar();
+  const formValues: FormValues = {
+    event: "",
+  };
   const validationYup = Yup.object({
     event: Yup.string().required(),
   });
 
-  function handleSubmit(values: object, formik: any) {
+  function handleSubmit(values: FormValues, formik: FormikHelpers<FormValues>) {
+    console.log(values);
     formik.resetForm();
     setIsModalOpen(false);
   }
@@ -31,7 +39,7 @@ export const AddEvent: React.FC<IAddEventProps> = ({ day }) => {
         New Event on {day}
       </h2>
       <Formik
-        initialValues={{ event: "" }}
+        initialValues={formValues}
         validationSchema={validationYup}
         onSubmit={(values, formik) => handleSubmit(values, formik)}
       >

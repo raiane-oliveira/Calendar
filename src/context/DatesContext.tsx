@@ -1,15 +1,25 @@
 import { getDaysInMonth, getYear } from "date-fns";
 import React, { createContext, useContext, useState } from "react";
 
-const DateContext: React.Context<any> = createContext(undefined);
-
 interface IDate {
   months: Date[][];
   currentDay: Date;
   weekdays: string[];
 }
+type CalendarContext = {
+  calendar: IDate;
+  setCalendar: React.Dispatch<React.SetStateAction<IDate>>;
+  isModalOpen: boolean;
+  setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+};
 
-export const DatesProvider = ({ children }: any) => {
+const DateContext = createContext<CalendarContext | null>(null);
+
+interface IDatesProvider {
+  children: React.ReactElement;
+}
+
+export const DatesProvider = ({ children }: IDatesProvider) => {
   const currentYear = getYear(new Date());
   const [calendar, setCalendar] = useState<IDate>({
     currentDay: new Date(),
@@ -41,7 +51,13 @@ export const DatesProvider = ({ children }: any) => {
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const useCalendar = () => useContext(DateContext);
+export const useCalendar = () => {
+  const calendar = useContext(DateContext);
+  if (!calendar) {
+    throw new Error("useCalendar has to be used within <DateContext.Provider>");
+  }
+  return calendar;
+};
 
 function returnDaysOfMonth(monthIndex: number, year: number) {
   const amountDaysInMonth = getDaysInMonth(new Date(year, monthIndex));

@@ -13,6 +13,7 @@ interface IAction {
 }
 
 export default function calendarReducer(calendar: IDate, action: IAction) {
+  console.log(calendar);
   switch (action.type) {
     case "addEvent": {
       return [];
