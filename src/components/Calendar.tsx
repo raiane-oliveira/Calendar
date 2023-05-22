@@ -7,7 +7,7 @@ import {
   lastDayOfMonth,
 } from "date-fns";
 import { useCalendar } from "../context/DatesContext";
-import React, { useState } from "react";
+import React, { MouseEvent, useState } from "react";
 import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { createPortal } from "react-dom";
 import { Modal } from "./Modal";
@@ -18,6 +18,9 @@ interface IDayProps {
   day: Date;
   firstDayOfWeekIndex?: number;
   isAnotherMonth?: boolean;
+  setMousePosition: React.Dispatch<
+    React.SetStateAction<{ x: number; y: number }>
+  >;
 }
 
 export function Calendar() {
@@ -25,13 +28,18 @@ export function Calendar() {
 
   // The initial state setting is the current month
   const [monthIndex, setMonthIndex] = useState(getMonth(calendar.currentDay));
+  const [mousePosition, setMousePosition] = useState({
+    x: 0,
+    y: 0,
+  });
 
   const year = Number(format(calendar.currentDay, "yyyy"));
   const month = format(new Date(Number(year), monthIndex, 1), "MMMM");
 
   const firstDayOfWeekIndex = getDay(new Date(year, monthIndex, 1));
-  const lastDayMonth = lastDayOfMonth(new Date(year, monthIndex, 1));
-  const lastDayOfWeekIndex = getDay(lastDayMonth);
+  const lastDayOfWeekIndex = getDay(
+    lastDayOfMonth(new Date(year, monthIndex, 1))
+  );
 
   const listPreviousDays = renderPreviousDays();
   const listNextDays = renderNextDays();
@@ -106,6 +114,7 @@ export function Calendar() {
           {listPreviousDays &&
             listPreviousDays.map((day: Date, index: number) => (
               <DayCalendar
+                setMousePosition={setMousePosition}
                 day={day}
                 index={index}
                 isAnotherMonth={true}
@@ -114,6 +123,7 @@ export function Calendar() {
             ))}
           {calendar.months[monthIndex].map((day: Date, index: number) => (
             <DayCalendar
+              setMousePosition={setMousePosition}
               day={day}
               index={index}
               firstDayOfWeekIndex={firstDayOfWeekIndex + 1}
@@ -123,6 +133,7 @@ export function Calendar() {
           {listNextDays &&
             listNextDays.map((day: Date, index: number) => (
               <DayCalendar
+                setMousePosition={setMousePosition}
                 day={day}
                 index={index}
                 isAnotherMonth={true}
@@ -134,7 +145,13 @@ export function Calendar() {
 
       {isModalOpen &&
         createPortal(
-          <Modal classes="bg-black-border p-6">
+          <Modal
+            classes={`bg-black-border p-6`}
+            position={{
+              y: `${mousePosition.y}px`,
+              x: `${mousePosition.x}px`,
+            }}
+          >
             <AddEvent day="May 25" />
           </Modal>,
           document.body
@@ -148,13 +165,19 @@ const DayCalendar: React.FC<IDayProps> = ({
   index,
   firstDayOfWeekIndex,
   isAnotherMonth = false,
+  setMousePosition,
 }) => {
   const { calendar, isModalOpen, setIsModalOpen } = useCalendar();
 
   const isFirstDay = index === 0;
   const isDayWeekend = isWeekend(day);
 
-  function handleOpenModal() {
+  function handleOpenModal(e: MouseEvent) {
+    const HALF_WIDTH_MODAL = 215;
+    setMousePosition({
+      x: e.clientX - HALF_WIDTH_MODAL,
+      y: e.clientY,
+    });
     setIsModalOpen(!isModalOpen);
   }
 
@@ -166,7 +189,13 @@ const DayCalendar: React.FC<IDayProps> = ({
         } ${isDayWeekend ? " bg-black-dark" : "bg-black"}
         ${isAnotherMonth && " opacity-60"}
       `}
-        onClick={handleOpenModal}
+        onClick={
+          !isAnotherMonth
+            ? handleOpenModal
+            : () => {
+                return;
+              }
+        }
       >
         <span
           className={`justify-self-end font-semibold ${
