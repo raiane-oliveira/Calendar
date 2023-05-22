@@ -24,7 +24,7 @@ interface IDayProps {
 }
 
 export function Calendar() {
-  const { calendar, isModalOpen } = useCalendar();
+  const { calendar, isModalOpen, setIsModalOpen } = useCalendar();
 
   // The initial state setting is the current month
   const [monthIndex, setMonthIndex] = useState(getMonth(calendar.currentDay));
@@ -51,6 +51,9 @@ export function Calendar() {
     if (monthIndex === 11) {
       setMonthIndex(0);
     }
+
+    // Close modal if it's open
+    if (isModalOpen) setIsModalOpen(false);
   }
 
   function onPreviousMonth() {
@@ -60,6 +63,9 @@ export function Calendar() {
     if (monthIndex === 0) {
       setMonthIndex(11);
     }
+
+    // Close modal if it's open
+    if (isModalOpen) setIsModalOpen(false);
   }
 
   function renderPreviousDays() {
