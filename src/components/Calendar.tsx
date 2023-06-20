@@ -13,12 +13,23 @@ import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 import { createPortal } from "react-dom";
 import { Modal } from "./Modal";
 import { AddEvent } from "./AddEvent";
+import { AddEventDetails } from "./AddEventDetails";
+import { produce } from "immer";
 
 interface IDateState {
   month: number;
   day: number;
 }
-
+interface IEvent {
+  title: string;
+  location?: string;
+  isAllDay?: boolean;
+  starts?: Date;
+  ends?: Date;
+  repeat?: string;
+  reminders?: string[];
+  notes?: string;
+}
 interface IDayProps {
   index: number;
   day: Date;
@@ -32,18 +43,18 @@ interface IDayProps {
 }
 
 export function Calendar() {
-  const { calendar, isModalOpen, setIsModalOpen } = useCalendar();
-
-  // The initial state setting is the current date
+  const { calendar, updateCalendar, isModalOpen, setIsModalOpen } =
+    useCalendar();
   const [dateIndex, setDateIndex] = useState<IDateState>({
     month: getMonth(calendar.currentDay),
     day: getDate(calendar.currentDay),
   });
+  const [isDetailsActive, setIsDetailsActive] = useState(false);
   const [mousePosition, setMousePosition] = useState({
     x: 0,
     y: 0,
   });
-
+  const day = calendar.months[dateIndex.month][dateIndex.day].day;
   const year = Number(format(calendar.currentDay, "yyyy"));
   const month = format(new Date(Number(year), dateIndex.month, 1), "MMMM");
 
@@ -69,7 +80,6 @@ export function Calendar() {
       });
     }
 
-    // Close modal if it's open
     if (isModalOpen) setIsModalOpen(false);
   }
 
@@ -87,7 +97,6 @@ export function Calendar() {
       });
     }
 
-    // Close modal if it's open
     if (isModalOpen) setIsModalOpen(false);
   }
 
@@ -106,7 +115,6 @@ export function Calendar() {
   function renderNextDays() {
     let nextMonth = calendar.months[dateIndex.month + 1];
 
-    // Returns first month
     if (!nextMonth) {
       nextMonth = calendar.months[0];
     }
@@ -115,6 +123,30 @@ export function Calendar() {
     const restOfWeek = 6 - lastDayOfWeekIndex;
     const list = nextMonth.slice(0, restOfWeek);
     return list;
+  }
+
+  function handleCloseModal() {
+    setIsDetailsActive(false);
+    setIsModalOpen(false);
+  }
+
+  function handleAddEvent(values: IEvent) {
+    const newEvent = {
+      title: values.title,
+      location: values.location ?? "",
+      allDay: values.isAllDay ?? true,
+      starts: values.starts ?? day,
+      ends: values.ends ?? day,
+      repeat: values.repeat ?? "no repeat",
+      reminders: values.reminders ?? [""],
+      notes: values.notes ?? "",
+    };
+    updateCalendar(
+      produce((draft) => {
+        draft.months[dateIndex.month][dateIndex.day].events?.push(newEvent);
+      })
+    );
+    handleCloseModal();
   }
 
   return (
@@ -141,29 +173,29 @@ export function Calendar() {
         </header>
         <div className="grid grid-flow-row grid-cols-7 p-0.5 gap-0.5 bg-black-border">
           {listPreviousDays &&
-            listPreviousDays.map((day: Date, index: number) => (
+            listPreviousDays.map((day, index: number) => (
               <DayCalendar
-                day={day}
+                day={day.day}
                 index={index}
                 isAnotherMonth={true}
                 key={index}
               />
             ))}
-          {calendar.months[dateIndex.month].map((day: Date, index: number) => (
+          {calendar.months[dateIndex.month].map((day, index: number) => (
             <DayCalendar
               dateIndex={dateIndex}
               setDateIndex={setDateIndex}
               setMousePosition={setMousePosition}
-              day={day}
+              day={day.day}
               index={index}
               firstDayOfWeekIndex={firstDayOfWeekIndex + 1}
               key={index}
             />
           ))}
           {listNextDays &&
-            listNextDays.map((day: Date, index: number) => (
+            listNextDays.map((day, index: number) => (
               <DayCalendar
-                day={day}
+                day={day.day}
                 index={index}
                 isAnotherMonth={true}
                 key={index}
@@ -172,24 +204,35 @@ export function Calendar() {
         </div>
       </main>
 
-      {isModalOpen &&
-        createPortal(
-          <Modal
-            classes={`bg-black-border p-6`}
-            position={{
-              y: `${mousePosition.y}px`,
-              x: `${mousePosition.x}px`,
-            }}
-          >
-            <AddEvent
-              day={format(
-                calendar.months[dateIndex.month][dateIndex.day],
-                "PP"
-              )}
-            />
-          </Modal>,
-          document.body
-        )}
+      {isModalOpen && !isDetailsActive
+        ? createPortal(
+            <Modal
+              classes={`bg-black-border`}
+              position={{
+                y: `${mousePosition.y}px`,
+                x: `${mousePosition.x}px`,
+              }}
+            >
+              <AddEvent
+                onAddEvent={handleAddEvent}
+                setIsDetailsActive={setIsDetailsActive}
+                day={day}
+              />
+            </Modal>,
+            document.body
+          )
+        : isModalOpen &&
+          isDetailsActive &&
+          createPortal(
+            <Modal classes="left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <AddEventDetails
+                onAddEvent={handleAddEvent}
+                onCloseModal={handleCloseModal}
+                day={day}
+              />
+            </Modal>,
+            document.body
+          )}
     </div>
   );
 }
@@ -207,6 +250,8 @@ const DayCalendar: React.FC<IDayProps> = ({
 
   const isFirstDay = index === 0;
   const isDayWeekend = isWeekend(day);
+  const events = dateIndex && calendar.months[dateIndex.month][index].events;
+  const hasEvent = events && events.length > 0;
 
   function handleOpenModal(e: MouseEvent) {
     const HALF_WIDTH_MODAL = 215;
@@ -221,35 +266,43 @@ const DayCalendar: React.FC<IDayProps> = ({
         day: getDate(day) - 1,
       });
     }
-
     setIsModalOpen(!isModalOpen);
   }
 
   return (
-    <>
-      <div
-        className={`grid p-2 w-full h-44 cursor-pointer ${
-          isFirstDay && " col-start-" + firstDayOfWeekIndex
-        } ${isDayWeekend ? " bg-black-dark" : "bg-black"}
+    <div
+      className={`grid p-2 w-full h-44 cursor-pointer ${
+        isFirstDay && " col-start-" + firstDayOfWeekIndex
+      } ${isDayWeekend ? " bg-black-dark" : "bg-black"}
         ${isAnotherMonth && " opacity-60"}
       `}
-        onClick={
-          !isAnotherMonth
-            ? handleOpenModal
-            : () => {
-                return;
-              }
-        }
+      onClick={
+        !isAnotherMonth
+          ? handleOpenModal
+          : () => {
+              return;
+            }
+      }
+    >
+      <span
+        className={`justify-self-end font-semibold ${
+          isSameDay(day, calendar.currentDay) &&
+          "bg-blue px-2 py-1 rounded-full h-max"
+        }`}
       >
-        <span
-          className={`justify-self-end font-semibold ${
-            isSameDay(day, calendar.currentDay) &&
-            "bg-blue px-2 py-1 rounded-full h-max"
-          }`}
-        >
-          {format(day, "d")}
-        </span>
-      </div>
-    </>
+        {format(day, "d")}
+      </span>
+      {hasEvent &&
+        events.map((event) => (
+          <div
+            key={event.title}
+            className="bg-pink w-max h-max px-1 text-sm rounded-lg"
+          >
+            {event.title}
+          </div>
+        ))}
+      {/* {calendar.events && isEventSameDay && (
+      )} */}
+    </div>
   );
 };

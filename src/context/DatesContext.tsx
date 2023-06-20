@@ -2,13 +2,30 @@ import { getDaysInMonth, getYear } from "date-fns";
 import React, { createContext, useContext, useState } from "react";
 
 interface IDate {
-  months: Date[][];
+  months: DayOfMonth[][];
   currentDay: Date;
   weekdays: string[];
 }
+
+interface Event {
+  title: string;
+  location?: string;
+  isAllDay?: boolean;
+  starts?: Date;
+  ends?: Date;
+  repeat?: string;
+  reminders?: string[];
+  notes?: string;
+}
+
+interface DayOfMonth {
+  day: Date;
+  events?: Array<Event>;
+}
+
 type CalendarContext = {
   calendar: IDate;
-  setCalendar: React.Dispatch<React.SetStateAction<IDate>>;
+  updateCalendar: React.Dispatch<React.SetStateAction<IDate>>;
   isModalOpen: boolean;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -16,12 +33,12 @@ type CalendarContext = {
 const DateContext = createContext<CalendarContext | null>(null);
 
 interface IDatesProvider {
-  children: React.ReactElement;
+  children: React.ReactNode;
 }
 
 export const DatesProvider = ({ children }: IDatesProvider) => {
   const currentYear = getYear(new Date());
-  const [calendar, setCalendar] = useState<IDate>({
+  const [calendar, updateCalendar] = useState<IDate>({
     currentDay: new Date(),
     months: [
       returnDaysOfMonth(0, currentYear),
@@ -43,7 +60,7 @@ export const DatesProvider = ({ children }: IDatesProvider) => {
 
   return (
     <DateContext.Provider
-      value={{ calendar, setCalendar, isModalOpen, setIsModalOpen }}
+      value={{ calendar, updateCalendar, isModalOpen, setIsModalOpen }}
     >
       {children}
     </DateContext.Provider>
@@ -64,7 +81,10 @@ function returnDaysOfMonth(monthIndex: number, year: number) {
   const daysOfMonth = [];
   for (let i = 1; i <= amountDaysInMonth; i++) {
     const dateOfMonth = new Date(year, monthIndex, i);
-    daysOfMonth.push(dateOfMonth);
+    daysOfMonth.push({
+      day: dateOfMonth,
+      events: [],
+    });
   }
 
   return daysOfMonth;

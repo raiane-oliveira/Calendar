@@ -1,9 +1,9 @@
 import React from "react";
 
 interface IModalProps {
-  children: JSX.Element;
-  classes: string;
-  position: {
+  children: React.ReactNode;
+  classes?: string;
+  position?: {
     y: string;
     x: string;
   };
@@ -16,7 +16,7 @@ export const Modal: React.FunctionComponent<IModalProps> = ({
 }) => {
   return (
     <div
-      style={{ top: position.y, left: position.x }}
+      style={position && { top: position.y, left: position.x }}
       className={`absolute rounded-xl shadow-md ${classes}`}
     >
       {children}

@@ -13,8 +13,10 @@
     "@phosphor-icons/react": "^2.0.9",
     "date-fns": "^2.30.0",
     "formik": "^2.2.9",
+    "immer": "^10.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "use-immer": "^0.9.0",
     "yup": "^1.1.1"
   },
   "devDependencies": {
